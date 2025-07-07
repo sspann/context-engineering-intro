@@ -167,7 +167,7 @@ The AI coding assistant will:
 
 **FEATURE**: Be specific and comprehensive
 - ❌ "Build a web scraper"
-- ✅ "Build an async web scraper using BeautifulSoup that extracts product data from e-commerce sites, handles rate limiting, and stores results in PostgreSQL"
+- ✅ "Build an async web scraper using Puppeteer that extracts product data from e-commerce sites, handles rate limiting, and stores results in MongoDB"
 
 **EXAMPLES**: Leverage the examples/ folder
 - Place relevant code patterns in `examples/`
@@ -253,14 +253,14 @@ The `examples/` folder is **critical** for success. AI coding assistants perform
 ```
 examples/
 ├── README.md           # Explains what each example demonstrates
-├── cli.py             # CLI implementation pattern
+├── cli.ts             # CLI implementation pattern
 ├── agent/             # Agent architecture patterns
-│   ├── agent.py      # Agent creation pattern
-│   ├── tools.py      # Tool implementation pattern
-│   └── providers.py  # Multi-provider pattern
+│   ├── agent.ts      # Agent creation pattern
+│   ├── tools.ts      # Tool implementation pattern
+│   └── providers.ts  # Multi-provider pattern
 └── tests/            # Testing patterns
-    ├── test_agent.py # Unit test patterns
-    └── conftest.py   # Pytest configuration
+    ├── test_agent.test.ts # Unit test patterns
+    └── test-runner.js   # Node test runner configuration
 ```
 
 ## Best Practices

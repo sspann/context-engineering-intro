@@ -1,5 +1,10 @@
-venv
-venv_linux
-__pycache__
-.ruff_cache
-.pytest_cache
+node_modules
+dist
+build
+.env
+.env.local
+.env.production
+coverage
+.nyc_output
+*.tsbuildinfo
+.DS_Store

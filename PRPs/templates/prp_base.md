@@ -35,7 +35,7 @@ Template optimized for AI agents to implement features with sufficient context a
 - url: [Official API docs URL]
   why: [Specific sections/methods you'll need]
   
-- file: [path/to/example.py]
+- file: [path/to/example.ts]
   why: [Pattern to follow, gotchas to avoid]
   
 - doc: [Library documentation URL] 
@@ -58,11 +58,11 @@ Template optimized for AI agents to implement features with sufficient context a
 ```
 
 ### Known Gotchas of our codebase & Library Quirks
-```python
-# CRITICAL: [Library name] requires [specific setup]
-# Example: FastAPI requires async functions for endpoints
-# Example: This ORM doesn't support batch inserts over 1000 records
-# Example: We use pydantic v2 and  
+```typescript
+// CRITICAL: [Library name] requires [specific setup]
+// Example: Express requires async functions for endpoints
+// Example: MongoDB doesn't support transactions across collections
+// Example: We use zod v3 and  
 ```
 
 ## Implementation Blueprint
@@ -70,12 +70,13 @@ Template optimized for AI agents to implement features with sufficient context a
 ### Data models and structure
 
 Create the core data models, we ensure type safety and consistency.
-```python
+```typescript
 Examples: 
- - orm models
- - pydantic models
- - pydantic schemas
- - pydantic validators
+ - zod schemas
+ - TypeScript interfaces
+ - TypeScript types
+ - zod validators
+ - Drizzle schemas for MongoDB
 
 ```
 
@@ -83,13 +84,13 @@ Examples:
 
 ```yaml
 Task 1:
-MODIFY src/existing_module.py:
+MODIFY src/existing_module.ts:
   - FIND pattern: "class OldImplementation"
-  - INJECT after line containing "def __init__"
+  - INJECT after line containing "constructor"
   - PRESERVE existing method signatures
 
-CREATE src/new_feature.py:
-  - MIRROR pattern from: src/similar_feature.py
+CREATE src/new_feature.ts:
+  - MIRROR pattern from: src/similar_feature.ts
   - MODIFY class name and core logic
   - KEEP error handling pattern identical
 
@@ -102,42 +103,45 @@ Task N:
 
 
 ### Per task pseudocode as needed added to each task
-```python
+```typescript
 
-# Task 1
-# Pseudocode with CRITICAL details dont write entire code
-async def new_feature(param: str) -> Result:
-    # PATTERN: Always validate input first (see src/validators.py)
-    validated = validate_input(param)  # raises ValidationError
+// Task 1
+// Pseudocode with CRITICAL details dont write entire code
+async function newFeature(param: string): Promise<Result> {
+  // PATTERN: Always validate input first (see src/validators.ts)
+  const validated = validateInput(param);  // throws ValidationError
+  
+  // GOTCHA: MongoDB requires connection pooling
+  const client = await getMongoClient();  // see src/db/connection.ts
+  try {
+    // PATTERN: Use existing retry decorator
+    const result = await retry(3, exponentialBackoff, async () => {
+      // CRITICAL: API returns 429 if >10 req/sec
+      await rateLimiter.acquire();
+      return await externalApi.call(validated);
+    });
     
-    # GOTCHA: This library requires connection pooling
-    async with get_connection() as conn:  # see src/db/pool.py
-        # PATTERN: Use existing retry decorator
-        @retry(attempts=3, backoff=exponential)
-        async def _inner():
-            # CRITICAL: API returns 429 if >10 req/sec
-            await rate_limiter.acquire()
-            return await external_api.call(validated)
-        
-        result = await _inner()
-    
-    # PATTERN: Standardized response format
-    return format_response(result)  # see src/utils/responses.py
+    // PATTERN: Standardized response format
+    return formatResponse(result);  // see src/utils/responses.ts
+  } finally {
+    await client.close();
+  }
+}
 ```
 
 ### Integration Points
 ```yaml
 DATABASE:
-  - migration: "Add column 'feature_enabled' to users table"
+  - migration: "Add field 'feature_enabled' to users collection"
   - index: "CREATE INDEX idx_feature_lookup ON users(feature_id)"
   
 CONFIG:
-  - add to: config/settings.py
-  - pattern: "FEATURE_TIMEOUT = int(os.getenv('FEATURE_TIMEOUT', '30'))"
+  - add to: config/settings.ts
+  - pattern: "FEATURE_TIMEOUT = parseInt(process.env.FEATURE_TIMEOUT || '30')"
   
 ROUTES:
-  - add to: src/api/routes.py  
-  - pattern: "router.include_router(feature_router, prefix='/feature')"
+  - add to: src/api/routes.ts  
+  - pattern: "router.use('/feature', featureRouter)"
 ```
 
 ## Validation Loop
@@ -145,46 +149,59 @@ ROUTES:
 ### Level 1: Syntax & Style
 ```bash
 # Run these FIRST - fix any errors before proceeding
-ruff check src/new_feature.py --fix  # Auto-fix what's possible
-mypy src/new_feature.py              # Type checking
+eslint src/new_feature.ts --fix  # Auto-fix what's possible
+tsc --noEmit src/new_feature.ts  # Type checking
 
 # Expected: No errors. If errors, READ the error and fix.
 ```
 
 ### Level 2: Unit Tests each new feature/file/function use existing test patterns
-```python
-# CREATE test_new_feature.py with these test cases:
-def test_happy_path():
-    """Basic functionality works"""
-    result = new_feature("valid_input")
-    assert result.status == "success"
+```typescript
+// CREATE test_new_feature.test.ts with these test cases:
+import { test, describe } from 'node:test';
+import assert from 'node:assert';
 
-def test_validation_error():
-    """Invalid input raises ValidationError"""
-    with pytest.raises(ValidationError):
-        new_feature("")
+describe('newFeature', () => {
+  test('basic functionality works', async () => {
+    const result = await newFeature("valid_input");
+    assert.strictEqual(result.status, "success");
+  });
 
-def test_external_api_timeout():
-    """Handles timeouts gracefully"""
-    with mock.patch('external_api.call', side_effect=TimeoutError):
-        result = new_feature("valid")
-        assert result.status == "error"
-        assert "timeout" in result.message
+  test('invalid input throws ValidationError', async () => {
+    await assert.rejects(async () => {
+      await newFeature("");
+    }, ValidationError);
+  });
+
+  test('handles timeouts gracefully', async () => {
+    // Mock external API to throw timeout error
+    const originalCall = externalApi.call;
+    externalApi.call = async () => { throw new Error('timeout'); };
+    
+    try {
+      const result = await newFeature("valid");
+      assert.strictEqual(result.status, "error");
+      assert(result.message.includes("timeout"));
+    } finally {
+      externalApi.call = originalCall;
+    }
+  });
+});
 ```
 
 ```bash
 # Run and iterate until passing:
-uv run pytest test_new_feature.py -v
+pnpm test test_new_feature.test.ts
 # If failing: Read error, understand root cause, fix code, re-run (never mock to pass)
 ```
 
 ### Level 3: Integration Test
 ```bash
 # Start the service
-uv run python -m src.main --dev
+pnpm run dev
 
 # Test the endpoint
-curl -X POST http://localhost:8000/feature \
+curl -X POST http://localhost:3000/feature \
   -H "Content-Type: application/json" \
   -d '{"param": "test_value"}'
 
@@ -193,9 +210,9 @@ curl -X POST http://localhost:8000/feature \
 ```
 
 ## Final validation Checklist
-- [ ] All tests pass: `uv run pytest tests/ -v`
-- [ ] No linting errors: `uv run ruff check src/`
-- [ ] No type errors: `uv run mypy src/`
+- [ ] All tests pass: `pnpm test`
+- [ ] No linting errors: `eslint src/`
+- [ ] No type errors: `tsc --noEmit`
 - [ ] Manual test successful: [specific curl/command]
 - [ ] Error cases handled gracefully
 - [ ] Logs are informative but not verbose
