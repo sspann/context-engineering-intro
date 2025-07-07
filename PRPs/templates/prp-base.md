@@ -72,8 +72,8 @@ Template optimized for AI agents to implement features with sufficient context a
 Create the core data models, we ensure type safety and consistency.
 ```typescript
 Examples: 
- - zod schemas
- - TypeScript interfaces
+ - zod schemas (use snake_case for DB fields)
+ - TypeScript interfaces (use camelCase for TS variables)
  - TypeScript types
  - zod validators
  - Drizzle schemas for MongoDB
@@ -84,13 +84,13 @@ Examples:
 
 ```yaml
 Task 1:
-MODIFY src/existing_module.ts:
+MODIFY src/existing-module.ts:
   - FIND pattern: "class OldImplementation"
   - INJECT after line containing "constructor"
   - PRESERVE existing method signatures
 
-CREATE src/new_feature.ts:
-  - MIRROR pattern from: src/similar_feature.ts
+CREATE src/new-feature.ts:
+  - MIRROR pattern from: src/similar-feature.ts
   - MODIFY class name and core logic
   - KEEP error handling pattern identical
 
@@ -149,15 +149,15 @@ ROUTES:
 ### Level 1: Syntax & Style
 ```bash
 # Run these FIRST - fix any errors before proceeding
-eslint src/new_feature.ts --fix  # Auto-fix what's possible
-tsc --noEmit src/new_feature.ts  # Type checking
+eslint src/new-feature.ts --fix  # Auto-fix what's possible
+tsc --noEmit src/new-feature.ts  # Type checking
 
 # Expected: No errors. If errors, READ the error and fix.
 ```
 
 ### Level 2: Unit Tests each new feature/file/function use existing test patterns
 ```typescript
-// CREATE test_new_feature.test.ts with these test cases:
+// CREATE test_new-feature.test.ts with these test cases:
 import { test, describe } from 'node:test';
 import assert from 'node:assert';
 
@@ -191,7 +191,7 @@ describe('newFeature', () => {
 
 ```bash
 # Run and iterate until passing:
-pnpm test test_new_feature.test.ts
+pnpm test test_new-feature.test.ts
 # If failing: Read error, understand root cause, fix code, re-run (never mock to pass)
 ```
 

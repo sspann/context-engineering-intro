@@ -73,8 +73,8 @@ context-engineering-intro/
 │   └── settings.local.json    # Claude Code permissions
 ├── PRPs/
 │   ├── templates/
-│   │   └── prp_base.md       # Base template for PRPs
-│   └── EXAMPLE_multi_agent_prp.md  # Example of a complete PRP
+│   │   └── prp-base.md       # Base template for PRPs
+│   └── EXAMPLE.multi-agent-prp.md  # Example of a complete PRP
 ├── examples/                  # Your code examples (critical!)
 ├── CLAUDE.md                 # Global rules for AI assistant
 ├── INITIAL.md               # Template for feature requests
@@ -220,7 +220,7 @@ The command follows this process:
 5. **Iterate**: Fixes any issues found
 6. **Complete**: Ensures all requirements met
 
-See `PRPs/EXAMPLE_multi_agent_prp.md` for a complete example of what gets generated.
+See `PRPs/EXAMPLE.multi-agent-prp.md` for a complete example of what gets generated.
 
 ## Using Examples Effectively
 

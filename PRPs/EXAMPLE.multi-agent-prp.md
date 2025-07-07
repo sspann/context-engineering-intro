@@ -75,7 +75,7 @@ A CLI-based application where:
 │   └── cli.ts
 ├── PRPs/
 │   └── templates/
-│       └── prp_base.md
+│       └── prp-base.md
 ├── INITIAL.md
 ├── CLAUDE.md
 └── package.json
@@ -86,24 +86,24 @@ A CLI-based application where:
 .
 ├── agents/
 │   ├── index.ts               # Package exports
-│   ├── research_agent.ts      # Primary agent with Brave Search
-│   ├── email_agent.ts         # Sub-agent with Gmail capabilities
+│   ├── research-agent.ts      # Primary agent with Brave Search
+│   ├── email-agent.ts         # Sub-agent with Gmail capabilities
 │   ├── providers.ts           # LLM provider configuration
 │   └── models.ts              # Zod schemas for data validation
 ├── tools/
 │   ├── index.ts               # Package exports
-│   ├── brave_search.ts        # Brave Search API integration
-│   └── gmail_tool.ts          # Gmail API integration
+│   ├── brave-search.ts        # Brave Search API integration
+│   └── gmail-tool.ts          # Gmail API integration
 ├── config/
 │   ├── index.ts               # Package exports
 │   └── settings.ts            # Environment and config management
 ├── tests/
 │   ├── agents/
-│   │   ├── research_agent.test.ts   # Research agent tests
-│   │   └── email_agent.test.ts      # Email agent tests
+│   │   ├── research-agent.test.ts   # Research agent tests
+│   │   └── email-agent.test.ts      # Email agent tests
 │   ├── tools/
-│   │   ├── brave_search.test.ts     # Brave search tool tests
-│   │   └── gmail_tool.test.ts       # Gmail tool tests
+│   │   ├── brave-search.test.ts     # Brave search tool tests
+│   │   └── gmail-tool.test.ts       # Gmail tool tests
 │   └── cli.test.ts            # CLI tests
 ├── cli.ts                     # CLI interface
 ├── .env.example               # Environment variables template
@@ -133,8 +133,8 @@ import { z } from 'zod';
 
 export const ResearchQuerySchema = z.object({
   query: z.string().min(1, "Query cannot be empty"),
-  maxResults: z.number().min(1).max(50).default(10),
-  includeSummary: z.boolean().default(true)
+  max_results: z.number().min(1).max(50).default(10),
+  include_summary: z.boolean().default(true)
 });
 
 export const BraveSearchResultSchema = z.object({
@@ -153,15 +153,37 @@ export const EmailDraftSchema = z.object({
 });
 
 export const ResearchEmailRequestSchema = z.object({
-  researchQuery: z.string(),
-  emailContext: z.string().min(1, "Email context required"),
-  recipientEmail: z.string().email()
+  research_query: z.string(),
+  email_context: z.string().min(1, "Email context required"),
+  recipient_email: z.string().email()
 });
 
-export type ResearchQuery = z.infer<typeof ResearchQuerySchema>;
-export type BraveSearchResult = z.infer<typeof BraveSearchResultSchema>;
-export type EmailDraft = z.infer<typeof EmailDraftSchema>;
-export type ResearchEmailRequest = z.infer<typeof ResearchEmailRequestSchema>;
+export interface ResearchQuery {
+  query: string;
+  maxResults: number;
+  includeSummary: boolean;
+}
+
+export interface BraveSearchResult {
+  title: string;
+  url: string;
+  description: string;
+  score: number;
+}
+
+export interface EmailDraft {
+  to: string[];
+  subject: string;
+  body: string;
+  cc?: string[];
+  bcc?: string[];
+}
+
+export interface ResearchEmailRequest {
+  researchQuery: string;
+  emailContext: string;
+  recipientEmail: string;
+}
 ```
 
 ### List of tasks to be completed
@@ -178,28 +200,28 @@ CREATE .env.example:
   - Follow pattern from examples/README.md
 
 Task 2: Implement Brave Search Tool
-CREATE tools/brave_search.ts:
+CREATE tools/brave-search.ts:
   - PATTERN: Async functions like examples/agent/tools.ts
   - Simple REST client using axios (already in dependencies)
   - Handle rate limits and errors gracefully
   - Return structured BraveSearchResult models
 
 Task 3: Implement Gmail Tool
-CREATE tools/gmail_tool.ts:
+CREATE tools/gmail-tool.ts:
   - PATTERN: Follow OAuth2 flow from Gmail quickstart
   - Store token.json in credentials/ directory
   - Create draft with proper MIME encoding
   - Handle authentication refresh automatically
 
 Task 4: Create Email Draft Agent
-CREATE agents/email_agent.ts:
+CREATE agents/email-agent.ts:
   - PATTERN: Follow examples/agent/agent.ts structure
   - Use Agent with deps_type pattern
   - Register gmail_tool as @agent.tool
   - Return EmailDraft model
 
 Task 5: Create Research Agent
-CREATE agents/research_agent.ts:
+CREATE agents/research-agent.ts:
   - PATTERN: Multi-agent pattern from TypeScript AI docs
   - Register brave_search as tool
   - Register email_agent.run() as tool
@@ -254,7 +276,7 @@ async function searchBrave(query: string, apiKey: string, count: number = 10): P
 
 // Task 5: Research Agent with Email Agent as Tool
 @researchAgent.tool
-async function createEmailDraft(
+async function create_email_draft(
   ctx: RunContext<AgentDependencies>,
   recipient: string,
   subject: string,
@@ -309,7 +331,7 @@ tsc --noEmit                # Type checking
 
 ### Level 2: Unit Tests
 ```typescript
-// test_research_agent.test.ts
+// test_research-agent.test.ts
 import { test, describe } from 'node:test';
 import assert from 'node:assert';
 
@@ -326,11 +348,11 @@ describe('Research Agent', () => {
     const result = await agent.run(
       "Research AI safety and draft email to john@example.com"
     );
-    assert(result.data.hasOwnProperty('draftId'));
+    assert(result.data.hasOwnProperty('draft_id'));
   });
 });
 
-// test_email_agent.test.ts  
+// test_email-agent.test.ts  
 describe('Email Agent', () => {
   test('handles Gmail OAuth flow', () => {
     process.env.GMAIL_CREDENTIALS_PATH = "test_creds.json";
@@ -343,7 +365,7 @@ describe('Email Agent', () => {
     const result = await agent.run(
       "Create email to test@example.com about AI research"
     );
-    assert(result.data.hasOwnProperty('draftId'));
+    assert(result.data.hasOwnProperty('draft_id'));
   });
 });
 ```
